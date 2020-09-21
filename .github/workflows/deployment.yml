@@ -1,0 +1,31 @@
+name: NuGet Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Plugin version (SemVer: https://semver.org)'
+        required: true
+jobs:
+  deploy:
+    name: "OpenMod.ApiServer NuGet Deployment"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout Repository
+      with:
+        fetch-depth: 0
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.101
+    - name: Install dependencies
+      run: dotnet restore src/
+    - name: Update version
+      run: "sed -i \"s#<Version>0.0.0</Version>#<Version>${{ github.event.inputs.version }}</Version>#\" src/OpenMod.ApiServer.csproj"  
+    - name: Build
+      run: dotnet build src/ --configuration Release --no-restore
+    - name: Push to NuGet
+      run: dotnet nuget push src/bin/Release/*.nupkg
+             --api-key ${{ secrets.NUGET_DEPLOY_KEY }}
+             --source https://api.nuget.org/v3/index.json
