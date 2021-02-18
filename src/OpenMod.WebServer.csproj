@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <PackageDescription>Provides a web server for OpenMod and it's plugins.</PackageDescription>
     <PackageId>OpenMod.WebServer</PackageId>
     <PackageLicenseExpression>EUPL-1.2</PackageLicenseExpression>
