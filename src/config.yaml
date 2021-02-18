@@ -1,2 +1,6 @@
-﻿bind: 0.0.0.0
+﻿database:
+  ConnectionStrings:
+    default: "Server=127.0.0.1; Database=openmod; Port=3306; User=root"
+
+bind: 0.0.0.0
 port: 27018

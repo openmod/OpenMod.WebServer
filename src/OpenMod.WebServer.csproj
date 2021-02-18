@@ -17,16 +17,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="config.yaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="config.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="EmbedIO" Version="3.4.3" />
     <PackageReference Include="OpenMod.Core" Version="3.0.10" />
     <PackageReference Include="OpenMod.EntityFrameworkCore" Version="3.0.10" />
     <PackageReference Include="OpenMod.Extensions.Games.Abstractions" Version="3.0.10" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="config.yaml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <ItemGroup>

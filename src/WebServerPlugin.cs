@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using OpenMod.API;
 using OpenMod.API.Permissions;
 using OpenMod.API.Plugins;
-using OpenMod.WebServer.Extensions;
 using OpenMod.Core.Helpers;
 using OpenMod.Core.Plugins;
 using OpenMod.EntityFrameworkCore.Extensions;
@@ -23,7 +22,7 @@ using SwanLogger = Swan.Logging.Logger;
 namespace OpenMod.WebServer
 {
     [UsedImplicitly]
-    public class ApiServerPlugin : OpenModUniversalPlugin
+    public class WebServerPlugin : OpenModUniversalPlugin
     {
         private readonly IRuntime _runtime;
         private readonly ILoggerFactory _loggerFactory;
@@ -31,7 +30,7 @@ namespace OpenMod.WebServer
         private readonly WebServerDbContext _dbContext;
         private EmbedIO.WebServer? _server;
 
-        public ApiServerPlugin(IServiceProvider serviceProvider,
+        public WebServerPlugin(IServiceProvider serviceProvider,
             IRuntime runtime,
             ILoggerFactory loggerFactory,
             IPermissionRegistry permissionRegistry,
