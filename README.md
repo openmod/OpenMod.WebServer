@@ -1,3 +1,3 @@
-# OpenMod.ApiServer
+# OpenMod.WebServer
 
-Provides an API server for OpenMod and it's plugins.
+Provides a web server for OpenMod and it's plugins.

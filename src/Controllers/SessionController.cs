@@ -1,14 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Threading.Tasks;
 using EmbedIO;
 using EmbedIO.Routing;
-using EmbedIO.WebApi;
-using OpenMod.ApiServer.Dtos;
+using OpenMod.WebServer.Dtos;
 
-namespace OpenMod.ApiServer.Controllers
+namespace OpenMod.WebServer.Controllers
 {
-    public class SessionController : WebApiController
+    public class SessionController : OpenModController
     {
+        public SessionController(IServiceProvider serviceProvider) : base(serviceProvider)
+        {
+        }
+
         [Route(HttpVerbs.Get, "/session")]
         public virtual Task<SessionDto> GetSession()
         {

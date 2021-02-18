@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 
-namespace OpenMod.ApiServer.Dtos
+namespace OpenMod.WebServer.Dtos
 {
     public class UserDto
     {
-        public string Id { get; set; }
+        public string Id { get; set; } = null!;
 
-        public ICollection<string> Roles { get; set; }
+        public ICollection<string> Roles { get; set; } = null!;
     }
 }

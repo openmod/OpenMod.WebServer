@@ -6,7 +6,7 @@ using LogLevel = Swan.Logging.LogLevel;
 using MicrosoftLogger = Microsoft.Extensions.Logging.ILogger;
 using MicrosoftLogLevel = Microsoft.Extensions.Logging.LogLevel;
 
-namespace OpenMod.ApiServer.Logging
+namespace OpenMod.WebServer.Logging
 {
     public class SerilogLogger : ILogger
     {

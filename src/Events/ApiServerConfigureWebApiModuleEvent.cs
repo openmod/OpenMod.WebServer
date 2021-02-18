@@ -1,15 +1,14 @@
-﻿using EmbedIO;
-using EmbedIO.WebApi;
-using OpenMod.Core.Eventing;
+﻿using OpenMod.Core.Eventing;
+using OpenMod.WebServer.Routing;
 
-namespace OpenMod.ApiServer.Events
+namespace OpenMod.WebServer.Events
 {
     public sealed class ApiServerConfigureWebApiModuleEvent : Event
     {
-        public WebServer Server { get; }
-        public WebApiModule WebApiModule { get; }
+        public EmbedIO.WebServer Server { get; }
+        public OpenModWebApiModule WebApiModule { get; }
 
-        public ApiServerConfigureWebApiModuleEvent(WebServer server, WebApiModule webApiModule)
+        public ApiServerConfigureWebApiModuleEvent(EmbedIO.WebServer server, OpenModWebApiModule webApiModule)
         {
             Server = server;
             WebApiModule = webApiModule;

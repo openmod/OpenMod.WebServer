@@ -1,15 +1,15 @@
 ﻿using EmbedIO;
 using OpenMod.Core.Eventing;
 
-namespace OpenMod.ApiServer.Events
+namespace OpenMod.WebServer.Events
 {
     public sealed class ApiServerConfigurationEvent : Event
     {
-        public ApiServerConfigurationEvent(WebServer server)
+        public ApiServerConfigurationEvent(EmbedIO.WebServer server)
         {
             Server = server;
         }
 
-        public WebServer Server { get; }
+        public EmbedIO.WebServer Server { get; }
     }
 }

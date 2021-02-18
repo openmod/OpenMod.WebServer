@@ -4,7 +4,7 @@ using EmbedIO.WebApi;
 using Microsoft.Extensions.DependencyInjection;
 using OpenMod.API;
 
-namespace OpenMod.ApiServer.Helpers
+namespace OpenMod.WebServer.Helpers
 {
     internal static class ControllerFactory
     {
