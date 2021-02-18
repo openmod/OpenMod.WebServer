@@ -29,17 +29,20 @@ namespace OpenMod.WebServer
         private readonly IPermissionRegistry _permissionRegistry;
         private readonly WebServerDbContext _dbContext;
         private EmbedIO.WebServer? _server;
+        private readonly ILogger<WebServerPlugin> _logger;
 
         public WebServerPlugin(IServiceProvider serviceProvider,
             IRuntime runtime,
             ILoggerFactory loggerFactory,
             IPermissionRegistry permissionRegistry,
-            WebServerDbContext dbContext) : base(serviceProvider)
+            WebServerDbContext dbContext, 
+            ILogger<WebServerPlugin> logger) : base(serviceProvider)
         {
             _runtime = runtime;
             _loggerFactory = loggerFactory;
             _permissionRegistry = permissionRegistry;
             _dbContext = dbContext;
+            _logger = logger;
         }
 
         protected override async Task OnLoadAsync()
@@ -62,6 +65,8 @@ namespace OpenMod.WebServer
             _server = new EmbedIO.WebServer(o => o
                     .WithUrlPrefix(url)
                     .WithMode(HttpListenerMode.EmbedIO));
+            _server.OnHttpException += OnHttpException;
+            _server.OnUnhandledException += OnUnhandledException;
 
             var @apiServerConfigurationEvent = new ApiServerConfigurationEvent(_server);
             await EventBus.EmitAsync(this, this, @apiServerConfigurationEvent);
@@ -87,6 +92,23 @@ namespace OpenMod.WebServer
 
             _server.StateChanged += (s, e) => SwanLogger.Info($"WebServer state - {e.NewState}");
             AsyncHelper.Schedule("API Server", () => _server.RunAsync());
+        }
+
+        private Task OnUnhandledException(IHttpContext context, Exception exception)
+        {
+            _logger.LogError(exception, "Exception occured: {0}");
+            return Task.CompletedTask;
+        }
+
+        private Task OnHttpException(IHttpContext context, IHttpException httpException)
+        {
+            if (httpException is Exception ex)
+            {
+                return OnUnhandledException(context, ex);
+            }
+
+            _logger.LogError("HTTP Exception occured: {0}", httpException);
+            return Task.CompletedTask;
         }
 
         public void RegisterPermissions()

@@ -33,8 +33,4 @@
     <PackageReference Include="OpenMod.Extensions.Games.Abstractions" Version="3.0.10" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Users\" />
-  </ItemGroup>
-
 </Project>
