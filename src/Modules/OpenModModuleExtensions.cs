@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Threading.Tasks;
 using EmbedIO;
 using EmbedIO.Utilities;
-using JetBrains.Annotations;
 
 namespace OpenMod.WebServer.Modules
 {

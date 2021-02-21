@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using JWT.Algorithms;
+using JWT.Builder;
 using Microsoft.Extensions.Logging;
+using OpenMod.API;
 using OpenMod.API.Ioc;
 using OpenMod.API.Users;
+using OpenMod.Core.Plugins;
 using OpenMod.Core.Users;
 
 namespace OpenMod.WebServer.Authentication
@@ -13,69 +17,91 @@ namespace OpenMod.WebServer.Authentication
     [ServiceImplementation]
     public class AuthenticationService : IAuthenticationService
     {
-        private readonly WebServerDbContext _dbContext;
         private readonly IUserManager _userManager;
         private readonly ILogger<AuthenticationService> _logger;
+        private readonly IRuntime _runtime;
+        private readonly byte[] _secret;
 
         public AuthenticationService(
-            WebServerDbContext dbContext,
             IUserManager userManager,
-            ILogger<AuthenticationService> logger)
+            ILogger<AuthenticationService> logger,
+            IRuntime runtime)
         {
-            _dbContext = dbContext;
             _userManager = userManager;
             _logger = logger;
+            _runtime = runtime;
+            _secret = ReadSecret();
         }
 
-        public async Task<AuthToken> CreateAuthTokenAsync(string ownerType, string ownerId, DateTime? expirationTime = null)
+        private byte[] ReadSecret()
         {
-            var token = new AuthToken
+            var workingDirectory = PluginHelper.GetWorkingDirectory(_runtime, "OpenMod.WebServer");
+            var file = Path.Combine(workingDirectory, "secret.dat");
+
+            if (!File.Exists(file))
             {
-                Token = Guid.NewGuid().ToString(),
-                ExpirationTime = expirationTime,
-                OwnerId = ownerId,
-                OwnerType = ownerType
-            };
-
-            await _dbContext.AuthTokens.AddAsync(token);
-
-            await _dbContext.SaveChangesAsync();
-            _dbContext.Entry(token).State = EntityState.Detached;
-            return token;
-        }
-
-        public async Task<bool> RevokeAuthTokenAsync(string token)
-        {
-            var matchedToken = await _dbContext.AuthTokens
-                .AsNoTracking()
-                .FirstOrDefaultAsync(d => d.Token == token);
-            if (matchedToken == null)
-            {
-                // Unknown token
-                return false;
+                var secret = GenerateSecret();
+                File.WriteAllText(file, Convert.ToBase64String(secret));
+                return secret;
             }
 
-            matchedToken.ExpirationTime = DateTime.UtcNow;
-            await _dbContext.SaveChangesAsync();
-            return true;
+            return Convert.FromBase64String(File.ReadAllText(file));
         }
 
-        public async Task<IReadOnlyCollection<AuthToken>> GetAuthTokensAsync(string userType, string userId)
+        private byte[] GenerateSecret()
         {
-            return await _dbContext.AuthTokens
-                .Where(d => d.OwnerId == userId && d.OwnerType == userId)
-                .AsNoTracking()
-                .ToListAsync();
+            var buffer = new byte[64];
+            new Random().NextBytes(buffer);
+            return buffer;
+        }
+
+        public async Task<AuthToken> CreateAuthTokenAsync(string userType, string userId, TokenCreationParameters parameters)
+        {
+            var user = await _userManager.FindUserAsync(userType, userId, UserSearchMode.FindById);
+
+            var builder = new JwtBuilder()
+                .WithAlgorithm(new HMACSHA256Algorithm())
+                .WithSecret(_secret)
+                .AddClaim("sub", userId)
+                .AddClaim("ut", userType)
+                .AddClaim("iat", DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+                .AddClaim("preferred_username", user?.DisplayName ?? userId);
+
+            if (parameters.Audience != null)
+            {
+                builder.AddClaim("aud", parameters.Audience);
+            }
+
+            if (parameters.ExpirationTime != null)
+            {
+                builder.AddClaim("exp", parameters.ExpirationTime.Value.ToUnixTimeSeconds());
+            }
+
+            var token = builder.Encode();
+
+            return new AuthToken
+            {
+                Token = token,
+                OwnerId = userId,
+                OwnerType = userType
+            };
         }
 
         public async Task<IUser?> AuthenticateAsync(string token)
         {
-            var matchedToken = await _dbContext.AuthTokens
-                .AsNoTracking()
-                .FirstOrDefaultAsync(d => d.Token == token);
+            Dictionary<string, object> decodedToken;
 
-            if (matchedToken == null || (matchedToken.ExpirationTime != null && matchedToken.ExpirationTime < DateTime.UtcNow))
+            try
             {
+                decodedToken = new JwtBuilder()
+                    .WithAlgorithm(new HMACSHA256Algorithm())
+                    .WithSecret(_secret)
+                    .MustVerifySignature()
+                    .Decode<Dictionary<string, object>>(token);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("Token validation has failed", ex);
                 return null;
             }
 
@@ -84,16 +110,25 @@ namespace OpenMod.WebServer.Authentication
 
             if (offlineUserProvider == null)
             {
-                _logger.LogError("Failed to find offline user provider, authentication will fail.");
-                return null;
+                _logger.LogWarning("Failed to find offline user provider.");
             }
 
-            var offlineUser = await offlineUserProvider.FindUserAsync(matchedToken.OwnerType, matchedToken.OwnerId, UserSearchMode.FindById);
+
+            var userId = (string)decodedToken["sub"];
+            var userType = (string)decodedToken["ut"];
+
+            IUser? offlineUser = null;
+
+            if (offlineUserProvider != null)
+            {
+                offlineUser = await offlineUserProvider.FindUserAsync(userType, userId, UserSearchMode.FindById);
+            }
+
             if (offlineUser == null)
             {
                 // User not found
                 // Can happen if CreateToken was called for a user that doesn't exists
-                return null;
+                return new WebUser(userType, userId);
             }
 
             return new WebUser(offlineUser);

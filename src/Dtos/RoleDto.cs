@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace OpenMod.WebServer.Dtos
+﻿namespace OpenMod.WebServer.Dtos
 {
     public class RoleDto
     {
@@ -11,11 +9,5 @@ namespace OpenMod.WebServer.Dtos
         public string DisplayName { get; set; } = null!;
 
         public bool IsAutoAssigned { get; set; }
-
-        public ICollection<string> GrantedPermissions { get; set; } = null!;
-
-        public ICollection<string> DeniedPermissions { get; set; } = null!;
-
-        public ICollection<string> ParentRoles { get; set; } = null!;
     }
 }

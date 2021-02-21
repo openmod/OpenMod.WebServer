@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using EmbedIO;
 using EmbedIO.Routing;
-using JetBrains.Annotations;
 using OpenMod.API.Plugins;
 using OpenMod.WebServer.Authorization;
 using OpenMod.WebServer.Dtos;
@@ -24,7 +22,7 @@ namespace OpenMod.WebServer.Controllers
 
         [Route(HttpVerbs.Get, "/plugins")]
         [Authorize(PermissionGetAllPlugins)]
-        public virtual Task<ICollection<PluginDto>> GetPlugins()
+        public ICollection<PluginDto> GetPlugins()
         {
             var plugins = new List<PluginDto>();
             foreach(var plugin in _pluginActivator.ActivatedPlugins)
@@ -38,8 +36,8 @@ namespace OpenMod.WebServer.Controllers
                     Website = plugin.Website
                 });
             }
-
-            return Task.FromResult<ICollection<PluginDto>>(plugins);
+            
+            return plugins;
         }
     }
 }

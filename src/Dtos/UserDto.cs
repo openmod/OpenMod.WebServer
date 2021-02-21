@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace OpenMod.WebServer.Dtos
 {
@@ -6,6 +7,10 @@ namespace OpenMod.WebServer.Dtos
     {
         public string Id { get; set; } = null!;
 
-        public ICollection<string> Roles { get; set; } = null!;
+        public string Type { get; set; } = null!;
+
+        public DateTime? SessionStartTime { get; set; }
+
+        public ICollection<RoleDto> Roles { get; set; } = null!;
     }
 }

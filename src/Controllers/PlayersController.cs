@@ -32,9 +32,9 @@ namespace OpenMod.WebServer.Controllers
 
         [Route(HttpVerbs.Get, "/players")]
         [Authorize(PermissionGetAllPlayers)]
-        public virtual async Task<ICollection<PlayerDto>> GetPlayers()
+        public virtual async Task<ICollection<UserDto>> GetPlayers()
         {
-            var list = new List<PlayerDto>();
+            var list = new List<UserDto>();
             var users = await _userManager.GetUsersAsync(KnownActorTypes.Player);
             foreach (var user in users)
             {
@@ -51,7 +51,7 @@ namespace OpenMod.WebServer.Controllers
 
         [Route(HttpVerbs.Get, "/players/{id?}")]
         [Authorize(PermissionGetPlayer)]
-        public virtual async Task<PlayerDto> GetPlayer(string id)
+        public virtual async Task<UserDto> GetPlayer(string id)
         {
             IUser? user;
             try
@@ -73,14 +73,14 @@ namespace OpenMod.WebServer.Controllers
             return await MapToPlayerDtoAsync(user);
         }
 
-        private async Task<PlayerDto> MapToPlayerDtoAsync(IUser user)
+        private async Task<UserDto> MapToPlayerDtoAsync(IUser user)
         {
             var roles = await _roleStore.GetRolesAsync(user);
-            return new PlayerDto
+            return new UserDto
             {
                 Id = user.Id,
-                SessionStartTime = user.Session?.SessionStartTime,
-                Roles = roles.Select(d => d.Id).ToList(),
+                Type = user.Type,
+                SessionStartTime = user.Session?.SessionStartTime
             };
         }
     }

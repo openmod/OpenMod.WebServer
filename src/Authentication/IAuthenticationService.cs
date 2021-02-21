@@ -8,9 +8,7 @@ namespace OpenMod.WebServer.Authentication
     [Service]
     public interface IAuthenticationService
     {
-        Task<AuthToken> CreateAuthTokenAsync(string ownerType, string ownerId, DateTime? expirationTime);
-
-        Task<bool> RevokeAuthTokenAsync(string token);
+        Task<AuthToken> CreateAuthTokenAsync(string userType, string userId, TokenCreationParameters parameters);
 
         Task<IUser?> AuthenticateAsync(string token);
     }
