@@ -1,5 +1,5 @@
 ﻿using OpenMod.Core.Eventing;
-using OpenMod.WebServer.Routing;
+using OpenMod.WebServer.Modules;
 
 namespace OpenMod.WebServer.Events
 {

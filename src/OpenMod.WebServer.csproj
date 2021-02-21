@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <PackageDescription>Provides a web server for OpenMod and it's plugins.</PackageDescription>
     <PackageId>OpenMod.WebServer</PackageId>
     <PackageLicenseExpression>EUPL-1.2</PackageLicenseExpression>
@@ -28,6 +28,10 @@
 
   <ItemGroup>
     <PackageReference Include="EmbedIO" Version="3.4.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.12">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="OpenMod.Core" Version="3.0.10" />
     <PackageReference Include="OpenMod.EntityFrameworkCore" Version="3.0.10" />
     <PackageReference Include="OpenMod.Extensions.Games.Abstractions" Version="3.0.10" />

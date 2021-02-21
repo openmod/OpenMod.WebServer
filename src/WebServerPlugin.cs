@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Net;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Web;
 using EmbedIO;
 using EmbedIO.Files;
 using JetBrains.Annotations;
@@ -12,10 +16,11 @@ using OpenMod.Core.Helpers;
 using OpenMod.Core.Plugins;
 using OpenMod.EntityFrameworkCore.Extensions;
 using OpenMod.Extensions.Games.Abstractions;
+using OpenMod.WebServer.Authorization;
 using OpenMod.WebServer.Controllers;
 using OpenMod.WebServer.Events;
 using OpenMod.WebServer.Logging;
-using OpenMod.WebServer.Routing;
+using OpenMod.WebServer.Modules;
 using SwanLogger = Swan.Logging.Logger;
 
 [assembly: PluginMetadata("OpenMod.WebServer", Author = "OpenMod", DisplayName = "OpenMod WebServer", Website = "https://github.com/openmod/OpenMod.WebServer/")]
@@ -28,16 +33,18 @@ namespace OpenMod.WebServer
         private readonly ILoggerFactory _loggerFactory;
         private readonly IPermissionRegistry _permissionRegistry;
         private readonly WebServerDbContext _dbContext;
-        private EmbedIO.WebServer? _server;
         private readonly ILogger<WebServerPlugin> _logger;
+        private readonly IServiceProvider _serviceProvider;
+        private EmbedIO.WebServer? _server;
 
         public WebServerPlugin(IServiceProvider serviceProvider,
             IRuntime runtime,
             ILoggerFactory loggerFactory,
             IPermissionRegistry permissionRegistry,
-            WebServerDbContext dbContext, 
+            WebServerDbContext dbContext,
             ILogger<WebServerPlugin> logger) : base(serviceProvider)
         {
+            _serviceProvider = serviceProvider;
             _runtime = runtime;
             _loggerFactory = loggerFactory;
             _permissionRegistry = permissionRegistry;
@@ -61,18 +68,37 @@ namespace OpenMod.WebServer
                 Directory.CreateDirectory(staticFilesDirectory);
             }
 
-            var url = $"http://{Configuration["bind"]}:{Configuration["port"]}";
+            var url = Configuration["bind"];
+
+            //if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            //{
+            //    if (!url.EndsWith("/"))
+            //    {
+            //        url += '/';
+            //    }
+
+            //    var file = "netsh";
+            //    var arguments = $"http add urlacl url={url} user={Environment.UserDomainName}\\{Environment.UserName}";
+            //    _logger.LogInformation($"> {file} {arguments}");
+
+            //    var startInfo = new ProcessStartInfo(file, arguments)
+            //    {
+            //        UseShellExecute = false
+            //    };
+
+            //    var process = Process.Start(startInfo);
+            //    await process!.WaitForExitAsync();
+            //}
+
             _server = new EmbedIO.WebServer(o => o
                     .WithUrlPrefix(url)
                     .WithMode(HttpListenerMode.EmbedIO));
-            _server.OnHttpException += OnHttpException;
-            _server.OnUnhandledException += OnUnhandledException;
 
-            var @apiServerConfigurationEvent = new ApiServerConfigurationEvent(_server);
-            await EventBus.EmitAsync(this, this, @apiServerConfigurationEvent);
+            _server.OnHttpException += OnHttpException;
+            _server.OnUnhandledException = OnUnhandledException;
 
             _server
-                .WithOpenModWebApi("/api", module =>
+                .WithOpenModWebApi("/api/openmod/", _serviceProvider, module =>
                 {
                     if (_runtime.HostInformation is IGameHostInformation)
                     {
@@ -85,10 +111,13 @@ namespace OpenMod.WebServer
                     var @event = new ApiServerConfigureWebApiModuleEvent(_server, module);
                     AsyncHelper.RunSync(() => EventBus.EmitAsync(this, this, @event));
                 })
-                .WithStaticFolder("/", staticFilesDirectory, true, m =>
+                .WithStaticFolder("/static", staticFilesDirectory, true, m =>
                 {
                     m.WithContentCaching();
                 });
+
+            var @apiServerConfigurationEvent = new ApiServerConfigurationEvent(_server);
+            await EventBus.EmitAsync(this, this, @apiServerConfigurationEvent);
 
             _server.StateChanged += (s, e) => SwanLogger.Info($"WebServer state - {e.NewState}");
             AsyncHelper.Schedule("API Server", () => _server.RunAsync());
@@ -96,8 +125,27 @@ namespace OpenMod.WebServer
 
         private Task OnUnhandledException(IHttpContext context, Exception exception)
         {
+            if (exception is AuthorizationFailedException authorizationFailedException)
+            {
+                return HandleAuthorizationException(context, authorizationFailedException);
+            }
+
             _logger.LogError(exception, "Exception occured: {0}");
             return Task.CompletedTask;
+        }
+
+        private Task HandleAuthorizationException(IHttpContext context, AuthorizationFailedException exception)
+        {
+            return context.SendStandardHtmlAsync(
+                (int) HttpStatusCode.Forbidden,
+                text =>
+                {
+                    text.Write("<p>Access to this page has been denied.</p>");
+                    text.Write(
+                        "<p><strong>Exception type:</strong> {0}<p><strong>Message:</strong> {1}",
+                        HttpUtility.HtmlEncode(exception.GetType().FullName ?? "<unknown>"),
+                        HttpUtility.HtmlEncode(exception.Message));
+                });
         }
 
         private Task OnHttpException(IHttpContext context, IHttpException httpException)

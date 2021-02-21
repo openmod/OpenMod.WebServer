@@ -4,11 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using OpenMod.API.Ioc;
 using OpenMod.API.Users;
 using OpenMod.Core.Users;
 
 namespace OpenMod.WebServer.Authentication
 {
+    [ServiceImplementation]
     public class AuthenticationService : IAuthenticationService
     {
         private readonly WebServerDbContext _dbContext;

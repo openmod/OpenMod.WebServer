@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Autofac;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
+using Microsoft.Extensions.DependencyInjection;
 using OpenMod.API;
 using OpenMod.API.Permissions;
+using OpenMod.Core.Helpers;
 using OpenMod.Core.Ioc;
 using OpenMod.Core.Permissions;
 using OpenMod.Core.Permissions.Data;
@@ -15,29 +18,43 @@ using OpenMod.WebServer.Authentication;
 using OpenMod.WebServer.Authorization;
 using OpenMod.WebServer.Controllers;
 
-namespace OpenMod.WebServer.Routing
+namespace OpenMod.WebServer.Modules
 {
     public class OpenModWebApiModule : WebApiModuleBase
     {
-        private readonly Dictionary<Type, IOpenModComponent> _openModComponents = new();
-        public OpenModWebApiModule(string baseRoute) : base(baseRoute)
+        private readonly IServiceProvider _serviceProvider;
+
+        public OpenModWebApiModule(string baseRoute, IServiceProvider serviceProvider) : base(baseRoute)
         {
+            _serviceProvider = serviceProvider;
         }
 
-        public OpenModWebApiModule(string baseRoute, ResponseSerializerCallback serializer) : base(baseRoute, serializer)
+
+        protected override async Task OnRequestAsync(IHttpContext context)
         {
+            try
+            {
+                await base.OnRequestAsync(context);
+            }
+            finally
+            {
+                if (context.Items.ContainsKey("scope"))
+                {
+                    await context.Items["scope"].DisposeSyncOrAsync();
+                }
+            }
         }
-        
+
         public void RegisterController<TController>(IOpenModComponent component)
             where TController : OpenModController
         {
-            RegisterController(component, () => (TController) CreateComponentFactory(typeof(TController), component));
+            AddAuthorizationHandler(typeof(TController), component);
+            RegisterController(component, () => (TController)CreateComponentFactory(typeof(TController), component));
         }
 
         public void RegisterController<TController>(IOpenModComponent component, Func<TController> factory)
             where TController : OpenModController
         {
-            _openModComponents.Add(typeof(TController), component);
             RegisterControllerType(typeof(TController), factory);
         }
 
@@ -48,22 +65,21 @@ namespace OpenMod.WebServer.Routing
 
         public void RegisterController(Type controllerType, IOpenModComponent component, Func<WebApiController> factory)
         {
-            _openModComponents.Add(controllerType, component);
+            AddAuthorizationHandler(controllerType, component);
             RegisterControllerType(controllerType, factory);
         }
 
         private OpenModController CreateComponentFactory(Type type, IOpenModComponent component)
         {
-            AddAuthorizationHandler(type, component);
             var scope = component.LifetimeScope.BeginLifetimeScope("AutofacWebRequest");
-            return (OpenModController) ActivatorUtilitiesEx.CreateInstance(scope, type);
+            return (OpenModController)ActivatorUtilitiesEx.CreateInstance(scope, type);
         }
 
-        private void AddAuthorizationHandler(Type controllerType, IOpenModComponent openModComponent)
+        private void AddAuthorizationHandler(Type controllerType, IOpenModComponent component)
         {
             var methods = controllerType.GetMethods(BindingFlags.Instance | BindingFlags.Public)
                 .Where(m => !m.ContainsGenericParameters);
-
+            
             foreach (var method in methods)
             {
                 var routeAttributes = method.GetCustomAttributes<RouteAttribute>()
@@ -86,10 +102,10 @@ namespace OpenMod.WebServer.Routing
                 {
                     AddHandler(attribute.Verb, attribute.Matcher, async (context, route) =>
                     {
-                        var scope = (ILifetimeScope) context.Items["scope"];
+                        var scope = component.LifetimeScope;
                         var permissionChecker = scope.Resolve<IPermissionChecker>();
                         var authenticationToken = context.Request.Headers["Authentication"];
-                        var authenticationService = scope.Resolve<IAuthenticationService>();
+                        var authenticationService = _serviceProvider.GetRequiredService<IAuthenticationService>();
 
                         IPermissionActor? actor = null;
                         if (!string.IsNullOrEmpty(authenticationToken))
@@ -113,11 +129,11 @@ namespace OpenMod.WebServer.Routing
                                        });
                         }
 
-                        foreach(var attr in authorizationAttributes)
+                        foreach (var attr in authorizationAttributes)
                         {
                             if (await permissionChecker.CheckPermissionAsync(actor, attr.Permission) != PermissionGrantResult.Grant)
                             {
-                                throw new AuthorizationFailedException($"Missing permission: {attr.Permission}.");
+                                throw new AuthorizationFailedException(component, attr.Permission);
                             }
                         }
                     });
