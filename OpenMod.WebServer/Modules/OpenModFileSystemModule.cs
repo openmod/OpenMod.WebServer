@@ -57,7 +57,6 @@ namespace OpenMod.WebServer.Modules
             }
 
             _logger.LogDebug($"File not found: {path}");
-
             return OnNotFoundAsync(context);
 
         }

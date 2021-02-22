@@ -9,7 +9,6 @@ using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using OpenMod.API;
 using OpenMod.API.Permissions;
 using OpenMod.Core.Helpers;
