@@ -17,5 +17,17 @@ namespace OpenMod.WebServer.Modules
             var module = new OpenModWebApiModule(baseRoute, serviceProvider);
             return @this.WithModule(null, module, configure);
         }
+
+        public static TContainer WithOpenModFileSystem<TContainer>(
+            this TContainer @this,
+            string baseRoute,
+            IServiceProvider serviceProvider,
+            Action<OpenModFileSystemModule> configure)
+            where TContainer : class, IWebModuleContainer
+        {
+            configure = Validate.NotNull(nameof(configure), configure);
+            var module = new OpenModFileSystemModule(baseRoute, serviceProvider);
+            return @this.WithModule(null, module, configure);
+        }
     }
 }
