@@ -8,7 +8,7 @@ on:
         required: true
 jobs:
   deploy:
-    name: "OpenMod.WebServer NuGet Deployment"
+    name: "OpenMod WebServer and Dashboard NuGet Deployment"
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -20,12 +20,18 @@ jobs:
       with:
         dotnet-version: 5.0.100
     - name: Install dependencies
-      run: dotnet restore src/
-    - name: Update version
-      run: "sed -i \"s#<Version>0.0.0</Version>#<Version>${{ github.event.inputs.version }}</Version>#\" src/OpenMod.WebServer.csproj"  
+      run: dotnet restore .
+    - name: Update version (WebServer)
+      run: "sed -i \"s#<Version>0.0.0</Version>#<Version>${{ github.event.inputs.version }}</Version>#\" OpenMod.WebServer/OpenMod.WebServer.csproj" 
+    - name: Update version (Dashboard)
+      run: "sed -i \"s#<Version>0.0.0</Version>#<Version>${{ github.event.inputs.version }}</Version>#\" OpenMod.Dashboard/OpenMod.Dashboard.csproj"       
     - name: Build
-      run: dotnet build src/ --configuration Release --no-restore
-    - name: Push to NuGet
-      run: dotnet nuget push src/bin/Release/*.nupkg
+      run: dotnet build . --configuration Release --no-restore
+    - name: Push to NuGet (WebServer)
+      run: dotnet nuget push OpenMod.WebServer/bin/Release/*.nupkg
              --api-key ${{ secrets.NUGET_DEPLOY_KEY }}
              --source https://api.nuget.org/v3/index.json
+    - name: Push to NuGet (Dashboard)
+      run: dotnet nuget push OpenMod.Dashboard/bin/Release/*.nupkg
+             --api-key ${{ secrets.NUGET_DEPLOY_KEY }}
+             --source https://api.nuget.org/v3/index.json             
