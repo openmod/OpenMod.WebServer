@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Autofac;
 using EmbedIO;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Zio;
@@ -18,9 +19,11 @@ namespace OpenMod.WebServer.Modules
         public AggregateFileSystem FileSystem { get; }
         public List<string> IndexFiles = new() { "index.html", "index.htm" };
         private readonly ILogger<OpenModFileSystemModule> _logger;
+        private IConfiguration _configuration;
 
         public OpenModFileSystemModule(string baseRoute, IServiceProvider serviceProvider) : base(baseRoute)
         {
+            _configuration = serviceProvider.GetRequiredService<IConfiguration>();
             _logger = serviceProvider.GetRequiredService<ILogger<OpenModFileSystemModule>>();
 
             var lifetime = serviceProvider.GetRequiredService<ILifetimeScope>();
@@ -79,16 +82,21 @@ namespace OpenMod.WebServer.Modules
 
             var extension = Path.GetExtension(context.RequestedPath);
 
-            if (string.IsNullOrEmpty(extension)
-                || extension.Equals(".htm", StringComparison.OrdinalIgnoreCase)
-                || extension.Equals(".html", StringComparison.OrdinalIgnoreCase))
+            if (_configuration.GetSection("spaSupport").Get<bool?>() ?? false)
             {
-                foreach (var indexFile in IndexFiles)
-                {
+                // Required for SPAs: send index.html if not found with 200 OK
+                // SPA will handle route
 
-                    if (FileSystem.FileExists($"/{indexFile}"))
+                if (string.IsNullOrEmpty(extension)
+                    || extension.Equals(".htm", StringComparison.OrdinalIgnoreCase)
+                    || extension.Equals(".html", StringComparison.OrdinalIgnoreCase))
+                {
+                    foreach (var indexFile in IndexFiles)
                     {
-                        return SendFileAsync(context, $"/{indexFile}");
+                        if (FileSystem.FileExists($"/{indexFile}"))
+                        {
+                            return SendFileAsync(context, $"/{indexFile}");
+                        }
                     }
                 }
             }

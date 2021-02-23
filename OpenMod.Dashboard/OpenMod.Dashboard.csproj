@@ -16,11 +16,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="web.d\index.html" />
+    <EmbeddedResource Include="web\**\*.*" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="web.d\index.html" />
+    <None Remove="config.yaml" />
+    <None Remove="resources-config.yaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="config.yaml" />
+    <EmbeddedResource Include="resources-config.yaml" />
   </ItemGroup>
 
   <ItemGroup>

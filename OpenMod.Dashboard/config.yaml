@@ -1,0 +1,5 @@
+﻿# Will automatically overwrite files in "web" folder
+# Set to false if you want to customize them
+updateFiles: true
+
+# For setting port etc. see OpenMod.WebServer configuration
