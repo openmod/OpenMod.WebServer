@@ -6,13 +6,16 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta content="width=device-width,initial-scale=1,minimal-ui" name="viewport">
 
-  <title>OpenMod Dashboard</title>
+  <!-- PrimeVue -->
+  <link href="https://unpkg.com/primevue/resources/themes/saga-blue/theme.css" rel="stylesheet">
+  <link href="https://unpkg.com/primevue/resources/primevue.min.css" rel="stylesheet">
+  <link href="https://unpkg.com/primeicons/primeicons.css" rel="stylesheet">
 
-  <!-- PrimeVue styles -->
-  <link href="https://unpkg.com/primevue@3.2.4/resources/themes/md-light-indigo/theme.css" rel="stylesheet">
-  <link href="https://unpkg.com/primevue@3.2.4/resources/primevue.min.css" rel="stylesheet">
-  <link href="https://unpkg.com/primeicons@3.0.0/primeicons.css" rel="stylesheet">
-  <link href="https://unpkg.com/primeflex@2.0.0/primeflex.css" rel="stylesheet">
+  <!-- Google Icon Font-->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!-- Materialize -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
 
   <!-- Custom styles -->
   <link href="./styles.css" rel="stylesheet">
@@ -30,8 +33,15 @@
   <script type="importmap-shim">
     {
       "imports": {
-        "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js?module",
-        "vue-router": "https://unpkg.com/vue-router@4/dist/vue-router.esm.js?module",
+        "vue": "https://unpkg.com/vue@3.0.5/dist/vue.esm-browser.prod.js?module",
+        "vue-router": "https://unpkg.com/vue-router@4.0.4/dist/vue-router.esm-browser.js",
+        "vuex": "https://unpkg.com/vuex@4.0.0/dist/vuex.esm-browser.js",
+        "primevue/utils": "https://unpkg.com/primevue@3.3.0/utils/utils.esm.min.js",
+        "primevue/api": "https://unpkg.com/primevue@3.3.0/api/api.esm.min.js",
+        "primevue/config": "https://unpkg.com/primevue@3.3.0/config/config.esm.min.js",
+        "primevue/ripple": "https://unpkg.com/primevue@3.3.0/ripple/ripple.esm.min.js",        
+        "primevue/button": "https://unpkg.com/primevue@3.3.0/button/button.esm.min.js",
+        "primevue/progressspinner": "https://unpkg.com/primevue@3.3.0/progressspinner/progressspinner.esm.min.js",        
         "goober": "https://unpkg.com/goober@2/dist/goober.esm.js?module"
       }
     }

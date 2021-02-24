@@ -1,17 +1,20 @@
+import { createRouter, createWebHistory } from 'vue-router';
 
-import { defineAsyncComponent } from 'vue'
-import { createRouter, createWebHistory } from 'vue-router'
-
-const Index = defineAsyncComponent(() => import('./pages/index.js'))
+const Index = () => import('./pages/index.js');
+const NotFound = () => import('./pages/not-found.js');
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: [{
-    path: '/',
-    components: {
-      default: Index,
+  routes: [
+    {
+      path: '/',
+      component: Index,
     },
-  }]
-})
+    {
+      path: "/:catchAll(.*)",
+      component: NotFound,
+    }
+  ]
+});
 
-export default router
+export default router;

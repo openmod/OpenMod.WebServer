@@ -1,22 +1,16 @@
 import { ref } from 'vue';
-//import InputText from 'primevue/inputtext';
 
 export default {
-    name: 'Home',
+  name: 'index',
 
-    setup() {
-        const val = ref(null);
+  setup() {
+    const val = ref(null);
+    return {
+      val
+    };
+  },
 
-        return {
-            val
-        };
-    },
-
-    components: {
-   //     'p-inputtext': InputText
-    },
-
-    template: `
-        <h6>{{val}}</h6>
-    `,
+  template: `
+    <h6>Index</h6>
+  `
 };
