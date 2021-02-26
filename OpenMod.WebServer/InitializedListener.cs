@@ -85,6 +85,7 @@ namespace OpenMod.WebServer
                 {
                     module.RegisterController<TokenController>(_plugin);
                 })
+                .WithOpenModConsole("/sock/console", _serviceProvider)
                 .WithOpenModFileSystem("/", _serviceProvider, RegisterPluginFiles);
 
             @event = new ApiServerConfiguredEvent(server);

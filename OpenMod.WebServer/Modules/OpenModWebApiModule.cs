@@ -8,7 +8,6 @@ using Autofac;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
-using Microsoft.Extensions.DependencyInjection;
 using OpenMod.API;
 using OpenMod.API.Permissions;
 using OpenMod.Core.Helpers;
@@ -23,12 +22,12 @@ namespace OpenMod.WebServer.Modules
 {
     public class OpenModWebApiModule : WebApiModuleBase
     {
+        private readonly IAuthenticationService _authenticationService;
         private static readonly MethodInfo CompileHandlerMethod;
-        private readonly IServiceProvider _serviceProvider;
 
-        public OpenModWebApiModule(string baseRoute, IServiceProvider serviceProvider) : base(baseRoute)
+        public OpenModWebApiModule(string baseRoute, IAuthenticationService authenticationService) : base(baseRoute)
         {
-            _serviceProvider = serviceProvider;
+            _authenticationService = authenticationService;
         }
 
         static OpenModWebApiModule()
@@ -105,12 +104,11 @@ namespace OpenMod.WebServer.Modules
                         var scope = component.LifetimeScope;
                         var permissionChecker = scope.Resolve<IPermissionChecker>();
                         var authenticationToken = context.Request.Headers["Authorization"]?.Replace("Bearer ", string.Empty);
-                        var authenticationService = _serviceProvider.GetRequiredService<IAuthenticationService>();
 
                         IPermissionActor? actor = null;
                         if (!string.IsNullOrEmpty(authenticationToken))
                         {
-                            actor = await authenticationService.AuthenticateAsync(authenticationToken!);
+                            actor = await _authenticationService.AuthenticateAsync(authenticationToken!);
                         }
 
                         if (actor == null)

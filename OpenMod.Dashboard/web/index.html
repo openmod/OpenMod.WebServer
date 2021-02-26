@@ -2,6 +2,8 @@
 <html lang="en">
 
 <head>
+  <!-- HEAD START -->
+
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta content="width=device-width,initial-scale=1,minimal-ui" name="viewport">
@@ -17,6 +19,11 @@
   <!-- Materialize -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
 
+  <!-- Xterm -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.5/xterm.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/xterm"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.5.0/lib/xterm-addon-fit.js"></script>
+  
   <!-- Custom styles -->
   <link href="./styles.css" rel="stylesheet">
   <link href="./vendor.css" rel="stylesheet">
@@ -25,10 +32,6 @@
     // Workaround vue error expecting process from node
     window.process = { env: {} }
   </script>
-</head>
-
-<body>
-  <div id="app"></div>
   <script defer src="https://unpkg.com/es-module-shims@latest/dist/es-module-shims.js"></script>
   <script type="importmap-shim">
     {
@@ -41,12 +44,34 @@
         "primevue/config": "https://unpkg.com/primevue@3.3.0/config/config.esm.min.js",
         "primevue/ripple": "https://unpkg.com/primevue@3.3.0/ripple/ripple.esm.min.js",        
         "primevue/button": "https://unpkg.com/primevue@3.3.0/button/button.esm.min.js",
+        "primevue/dialog": "https://unpkg.com/primevue@3.3.0/dialog/dialog.esm.min.js",        
+        "primevue/inputtext": "https://unpkg.com/primevue@3.3.0/inputtext/inputtext.esm.min.js",        
         "primevue/progressspinner": "https://unpkg.com/primevue@3.3.0/progressspinner/progressspinner.esm.min.js",        
-        "goober": "https://unpkg.com/goober@2/dist/goober.esm.js?module"
+        "primevue/toast": "https://unpkg.com/primevue@3.3.0/toast/toast.esm.min.js",        
+        "primevue/usetoast": "https://unpkg.com/primevue@3.3.0/usetoast/usetoast.esm.min.js",        
+        "primevue/toasteventbus": "https://unpkg.com/primevue@3.3.0/toasteventbus/toasteventbus.esm.min.js",        
+        "primevue/toastservice": "https://unpkg.com/primevue@3.3.0/toastservice/toastservice.esm.min.js",  
+        "primevue/menu": "https://unpkg.com/primevue@3.3.0/menu/menu.esm.min.js",        
+        "goober": "https://unpkg.com/goober@2/dist/goober.esm.js?module",
+        "@fortawesome/fontawesome-svg-core": "https://unpkg.com/@fortawesome/fontawesome-svg-core@1.2.34/index.es.js?module",
+        "@fortawesome/free-solid-svg-icons": "https://unpkg.com/@fortawesome/free-solid-svg-icons@5.15.2/index.es.js",
+        "@fortawesome/vue-fontawesome": "https://unpkg.com/@fortawesome/vue-fontawesome@3.0.0-3/index.es.js",
+        "mitt": "https://unpkg.com/mitt@2.1.0/dist/mitt.es.js?module",
+        "jwt-decode": "https://unpkg.com/jwt-decode@3.1.2/build/jwt-decode.esm.js?module"
       }
     }
   </script>
+  <!-- HEAD END -->
+</head>
+
+<body>
+  <!-- BODY START -->
+
+  <div id="app"></div>
+
   <script type="module-shim" src="./main.js"></script>
+
+  <!-- BODY END -->
 </body>
 
 </html>

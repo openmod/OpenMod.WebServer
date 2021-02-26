@@ -5,10 +5,10 @@ const styles = css`
     color: white;
     font-weight: bold;
   } 
-`
+`;
 
 export default {
-  name: 'footer',
+  name: 'app-footer',
 
   template: `
     <div class="${styles}">

@@ -1,18 +1,23 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-const Index = () => import('./pages/index.js');
-const NotFound = () => import('./pages/not-found.js');
+const index = () => import('./pages/index.js');
+const console = () => import('./pages/console.js');
+const notFound = () => import('./pages/not-found.js');
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
       path: '/',
-      component: Index,
+      component: index,
     },
     {
+      path: '/console',
+      component: console,
+    },    
+    {
       path: "/:catchAll(.*)",
-      component: NotFound,
+      component: notFound,
     }
   ]
 });

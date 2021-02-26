@@ -1,6 +1,7 @@
 {
 	"recommendations": [
 		"ms-vscode.csharp",
-		"bierner.lit-html"
+		"faisalhakim47.vue-inline-template",
+		"jpoissonnier.vscode-styled-components"
 	]
 }

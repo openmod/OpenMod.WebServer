@@ -1,6 +1,9 @@
 ﻿using System;
+using Autofac;
 using EmbedIO;
 using EmbedIO.Utilities;
+using Microsoft.Extensions.DependencyInjection;
+using OpenMod.Core.Ioc;
 
 namespace OpenMod.WebServer.Modules
 {
@@ -14,8 +17,10 @@ namespace OpenMod.WebServer.Modules
             where TContainer : class, IWebModuleContainer
         {
             configure = Validate.NotNull(nameof(configure), configure);
-            var module = new OpenModWebApiModule(baseRoute, serviceProvider);
-            return @this.WithModule(null, module, configure);
+
+            var lifetime = serviceProvider.GetRequiredService<ILifetimeScope>();
+            var module = ActivatorUtilitiesEx.CreateInstance<OpenModWebApiModule>(lifetime, baseRoute);
+            return @this.WithModule(module, configure);
         }
 
         public static TContainer WithOpenModFileSystem<TContainer>(
@@ -26,8 +31,21 @@ namespace OpenMod.WebServer.Modules
             where TContainer : class, IWebModuleContainer
         {
             configure = Validate.NotNull(nameof(configure), configure);
-            var module = new OpenModFileSystemModule(baseRoute, serviceProvider);
-            return @this.WithModule(null, module, configure);
+
+            var lifetime = serviceProvider.GetRequiredService<ILifetimeScope>();
+            var module = ActivatorUtilitiesEx.CreateInstance<OpenModFileSystemModule>(lifetime, baseRoute);
+            return @this.WithModule(module, configure);
+        }
+
+        public static TContainer WithOpenModConsole<TContainer>(
+            this TContainer @this,
+            string baseRoute,
+            IServiceProvider serviceProvider)
+            where TContainer : class, IWebModuleContainer
+        {
+            var lifetime = serviceProvider.GetRequiredService<ILifetimeScope>();
+            var module = ActivatorUtilitiesEx.CreateInstance<OpenModConsoleModule>(lifetime, baseRoute);
+            return @this.WithModule(module);
         }
     }
 }

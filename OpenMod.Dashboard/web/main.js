@@ -1,7 +1,12 @@
 import { createApp } from 'vue';
-import button from 'primevue/button';
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faSignInAlt } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+
 import primeVue from 'primevue/config';
-import progressspinner from 'primevue/progressspinner';
+import toastService from 'primevue/toastservice';
+
+library.add(faSignInAlt);
 
 import app from './app.js';
 import store from './store.js';
@@ -11,6 +16,6 @@ createApp(app)
   .use(store)
   .use(router)
   .use(primeVue, { ripple: true })
-  .component('p-button', button)
-  .component('p-progressspinner', progressspinner)
+  .use(toastService)
+  .component('fa-icon', FontAwesomeIcon)
   .mount('#app');

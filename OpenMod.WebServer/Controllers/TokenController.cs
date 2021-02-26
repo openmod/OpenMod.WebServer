@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 using EmbedIO;
 using EmbedIO.Routing;
@@ -40,6 +41,11 @@ namespace OpenMod.WebServer.Controllers
             if (token != null)
             {
                 _codeService.DeleteCode(input.Code!);
+            }
+            else
+            {
+                HttpContext.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
+                return "Invalid code";
             }
 
             return token?.Token;

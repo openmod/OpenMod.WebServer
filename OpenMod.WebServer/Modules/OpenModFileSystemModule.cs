@@ -4,10 +4,8 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Autofac;
 using EmbedIO;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Zio;
 using Zio.FileSystems;
@@ -19,15 +17,14 @@ namespace OpenMod.WebServer.Modules
         public AggregateFileSystem FileSystem { get; }
         public List<string> IndexFiles = new() { "index.html", "index.htm" };
         private readonly ILogger<OpenModFileSystemModule> _logger;
-        private IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
 
-        public OpenModFileSystemModule(string baseRoute, IServiceProvider serviceProvider) : base(baseRoute)
+        public OpenModFileSystemModule(string baseRoute,
+            IConfiguration configuration,
+            ILogger<OpenModFileSystemModule> logger) : base(baseRoute)
         {
-            _configuration = serviceProvider.GetRequiredService<IConfiguration>();
-            _logger = serviceProvider.GetRequiredService<ILogger<OpenModFileSystemModule>>();
-
-            var lifetime = serviceProvider.GetRequiredService<ILifetimeScope>();
-            lifetime.Disposer.AddInstanceForDisposal(this);
+            _configuration = configuration;
+            _logger = logger;
 
             FileSystem = new AggregateFileSystem(owned: true);
         }
@@ -77,26 +74,19 @@ namespace OpenMod.WebServer.Modules
             if (FileSystem.FileExists("/404.html"))
             {
                 context.Response.StatusCode = 404;
-                return SendFileAsync(context,"/404.html");
+                return SendFileAsync(context, "/404.html");
             }
-
-            var extension = Path.GetExtension(context.RequestedPath);
 
             if (_configuration.GetSection("spaSupport").Get<bool?>() ?? false)
             {
                 // Required for SPAs: send index.html if not found with 200 OK
                 // SPA will handle route
 
-                if (string.IsNullOrEmpty(extension)
-                    || extension.Equals(".htm", StringComparison.OrdinalIgnoreCase)
-                    || extension.Equals(".html", StringComparison.OrdinalIgnoreCase))
+                foreach (var indexFile in IndexFiles)
                 {
-                    foreach (var indexFile in IndexFiles)
+                    if (FileSystem.FileExists($"/{indexFile}"))
                     {
-                        if (FileSystem.FileExists($"/{indexFile}"))
-                        {
-                            return SendFileAsync(context, $"/{indexFile}");
-                        }
+                        return SendFileAsync(context, $"/{indexFile}");
                     }
                 }
             }

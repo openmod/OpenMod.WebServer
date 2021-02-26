@@ -1,4 +1,4 @@
 {
   "serverName": "My OpenMod Server",
-  "apiEndpoint": "/"
+  "apiEndpoint": "{host}"
 }
